@@ -1,39 +1,98 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<title>BART</title>
-	</head>
-	<body>
-		<header>
-		</header>
-		
-		<div id="googleMap" style="width:100%;height:400px;"></div>
+<head>
+	<title>BART</title>
+</head>
+<body>
+	<header>
+	</header>
 
-		<article>
-			{{{content}}}
-		</article>
-		<footer>
-		</footer>
+	<div id="googleMap" style="width:100%;height:400px;"></div>
 
-		<script>
-function myMap() {
-var options= {
-    center: new google.maps.LatLng(37.354107, -121.955238),
-    zoom: 14,
-    scrollwheel: false,
-    panControl: true,
-    zoomControl: true,
-    mapTypeControl: true,
-    scaleControl: true,
-    streetViewControl: true,
-    overviewMapControl: true,
-    rotateControl: true,
-};
-var map=new google.maps.Map(document.getElementById("googleMap"),options);
-}
-</script>
+	{{{content}}}
+	<article>
+	</article>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAeHd8YCGXmPjRLvokoUdFIyIT9XQHfZ7M&callback=myMap"></script>
+	<aside>
+		<section id="startInfo">
+		</section>
 
-	</body>
+		<section id="endInfo">
+		</section>
+	</aside>
+
+	<footer>
+	</footer>
+
+	<script
+	src="https://code.jquery.com/jquery-3.3.1.min.js"
+	integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+	crossorigin="anonymous"></script>
+	<script>
+		var directionsService;
+		var directionsDisplay;
+
+		function initMap() {
+			directionsService = new google.maps.DirectionsService;
+			directionsDisplay = new google.maps.DirectionsRenderer;
+			var map = new google.maps.Map(document.getElementById('googleMap'), {
+				zoom: 14,
+				center: {lat: 37.354107, lng: -121.955238}
+			});
+			directionsDisplay.setMap(map);
+
+			// var onChangeHandler = function() {
+			// 	calculateAndDisplayRoute(directionsService, directionsDisplay);
+			// };
+			// document.getElementById('start').addEventListener('change', onChangeHandler);
+			// document.getElementById('end').addEventListener('change', onChangeHandler);
+		}
+
+		function calculateAndDisplayRoute(directionsService, directionsDisplay) {
+			directionsService.route({
+				origin: document.getElementById('start').value,
+				destination: document.getElementById('end').value,
+				travelMode: 'TRANSIT',
+				transitOptions: {
+					modes: ['RAIL']
+				}
+			}, function(response, status) {
+				if (status === 'OK') {
+					directionsDisplay.setDirections(response);
+				} else {
+					window.alert('Directions request failed due to ' + status);
+				}
+			});
+
+			var map=new google.maps.Map(document.getElementById("googleMap"),options);
+		}
+
+		$('#start').on("change", function() {
+			var abbr = $(this).val();
+			$.ajax({
+				url: "/station",
+				data: {source: abbr},
+				success: function(res) {
+
+					$('#startInfo').html("")
+				}
+			})
+		});
+
+		$('#start').on("change", function() {
+			var abbr = $(this).val();
+			$.ajax({
+				url: "/station",
+				data: {source: abbr},
+				success: function(res) {
+					
+					$('#startInfo').html("")
+				}
+			})
+		});
+	</script>
+
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAeHd8YCGXmPjRLvokoUdFIyIT9XQHfZ7M&callback=initMap"></script>
+
+</body>
 </html>
