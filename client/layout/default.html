@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>BART</title>
+	</head>
+	<body>
+		<header>
+		</header>
+		
+		<div id="googleMap" style="width:100%;height:400px;"></div>
+
+		<article>
+			{{{content}}}
+		</article>
+		<footer>
+		</footer>
+
+		<script>
+function myMap() {
+var options= {
+    center: new google.maps.LatLng(37.354107, -121.955238),
+    zoom: 14,
+    scrollwheel: false,
+    panControl: true,
+    zoomControl: true,
+    mapTypeControl: true,
+    scaleControl: true,
+    streetViewControl: true,
+    overviewMapControl: true,
+    rotateControl: true,
+};
+var map=new google.maps.Map(document.getElementById("googleMap"),options);
+}
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAeHd8YCGXmPjRLvokoUdFIyIT9XQHfZ7M&callback=myMap"></script>
+
+	</body>
+</html>

@@ -1,0 +1,20 @@
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# bower
+bower_components
+
+build/Release
+node_modules
+
+.env
+
+.next
+
