@@ -14,5 +14,6 @@
     "inert": "^4.2.1",
     "joi": "^13.1.2",
     "vision": "^4.0.0"
-  }
+  },
+  "scripts": {"start": "node server.js"}
 }
