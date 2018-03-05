@@ -15,9 +15,29 @@
 
 	<aside>
 		<section id="startInfo">
+			<label>Station Name</label>
+			<input id="name" type="text" readonly/>
+			<label>Address</label>
+			<input id="address" type="text" readonly/>
+			<label>Latitude</label>
+			<input id="latitude" type="text" readonly/>
+			<label>Longitude</label>
+			<input id="longitude" type="text" readonly/>
+			<label>Intro</label>
+			<textarea id="intro" rows="4" cols="100" style="resize: none" readonly></textarea>
 		</section>
 
 		<section id="endInfo">
+			<label>Station Name</label>
+			<input id="name" type="text" readonly/>
+			<label>Address</label>
+			<input id="address" type="text" readonly/>
+			<label>Latitude</label>
+			<input id="latitude" type="text" readonly/>
+			<label>Longitude</label>
+			<input id="longitude" type="text" readonly/>
+			<label>Intro</label>
+			<textarea id="intro" rows="4" cols="100" style="resize: none" readonly></textarea>
 		</section>
 	</aside>
 
@@ -31,6 +51,8 @@
 	<script>
 		var directionsService;
 		var directionsDisplay;
+		var mapStart;
+		var mapEnd;
 
 		function initMap() {
 			directionsService = new google.maps.DirectionsService;
@@ -49,9 +71,21 @@
 		}
 
 		function calculateAndDisplayRoute(directionsService, directionsDisplay) {
+			if (mapStart == null || mapEnd == null) {
+				return;
+			}
+
+			$.ajax({
+				url: "/trips",
+				data: {source: document.getElementById('start').value, dest: document.getElementById('end').value},
+				success: function(res) {
+					console.log(res)
+				}
+			})
+
 			directionsService.route({
-				origin: document.getElementById('start').value,
-				destination: document.getElementById('end').value,
+				origin: mapStart,
+				destination: mapEnd,
 				travelMode: 'TRANSIT',
 				transitOptions: {
 					modes: ['RAIL']
@@ -63,30 +97,57 @@
 					window.alert('Directions request failed due to ' + status);
 				}
 			});
+		}
 
-			var map=new google.maps.Map(document.getElementById("googleMap"),options);
+		function buildStation(station, id) {
+			var parent = 'startInfo'
+			if (id == 'end') {
+				parent = 'endInfo'
+			}
+
+			var addr = station.address + ', ' + station.city + ', ' + station.state + ' ' + station.zipcode 
+
+			$('#'+parent + " #name").val()
+			$('#'+parent + " #address").val()
+			$('#'+parent + " #latitude").val()
+			$('#'+parent + " #longitude").val()
+			$('#'+parent + " #intro").val()
+
+			$('#'+parent + " #name").val(station.name)
+			$('#'+parent + " #address").val(addr)
+			$('#'+parent + " #latitude").val(station.gtfs_latitude)
+			$('#'+parent + " #longitude").val(station.gtfs_longitude)
+			$('#'+parent + " #intro").val(station.intro["#cdata-section"])
+
+			return addr;
 		}
 
 		$('#start').on("change", function() {
 			var abbr = $(this).val();
+			var id = $(this).attr("id")
 			$.ajax({
 				url: "/station",
 				data: {source: abbr},
 				success: function(res) {
+					var station = res.root.stations.station
+					mapStart = buildStation(station, id)
 
-					$('#startInfo').html("")
+					calculateAndDisplayRoute(directionsService, directionsDisplay);
 				}
 			})
 		});
 
-		$('#start').on("change", function() {
+		$('#end').on("change", function() {
 			var abbr = $(this).val();
+			var id = $(this).attr("id")
 			$.ajax({
 				url: "/station",
 				data: {source: abbr},
 				success: function(res) {
-					
-					$('#startInfo').html("")
+					var station = res.root.stations.station
+					mapEnd = buildStation(station, id)
+
+					calculateAndDisplayRoute(directionsService, directionsDisplay);
 				}
 			})
 		});
