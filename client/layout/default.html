@@ -2,58 +2,90 @@
 <html>
 <head>
 	<title>BART</title>
-	<link rel="stylesheet" href="public/css/main.css" />
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+	<link rel="stylesheet" href="public/css/dashboard.css"/>
 </head>
 <body>
 	<header>
+		<nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0">
+			<a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">BART Project</a>
+			<!-- <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search"> -->
+			<ul class="navbar-nav px-3">
+				<li class="nav-item text-nowrap">
+					<a class="nav-link" href="#"></a>
+				</li>
+			</ul>
+		</nav>
 	</header>
 
-	<div id="googleMap" style="width:100%;height:400px;"></div>
+	<div class="container-fluid">
+		<div class="row">
+			<nav class="col-md-2 d-none d-md-block bg-light sidebar">
+				<div class="sidebar-sticky">
+					<aside>
+						<section id="startInfo">
+							<label>Station Name</label>
+							<input id="name" type="text" readonly/>
+							<label>Address</label>
+							<input id="address" type="text" readonly/>
+							<label>Latitude</label>
+							<input id="latitude" type="text" readonly/>
+							<label>Longitude</label>
+							<input id="longitude" type="text" readonly/>
+							<label>Intro</label>
+							<span id="intro" rows="4" cols="100" style="resize: none" readonly></span>
+						</section>
 
-	{{{content}}}
-	<article>
-	</article>
+						<section id="endInfo">
+							<label>Station Name</label>
+							<input id="name" type="text" readonly/>
+							<label>Address</label>
+							<input id="address" type="text" readonly/>
+							<label>Latitude</label>
+							<input id="latitude" type="text" readonly/>
+							<label>Longitude</label>
+							<input id="longitude" type="text" readonly/>
+							<label>Intro</label>
+							<textarea id="intro" rows="4" cols="100" style="resize: none" readonly></textarea>
+						</section>
+					</aside>
+				</div>
+			</nav>
 
-	<aside>
-		<section id="startInfo">
-			<label>Station Name</label>
-			<input id="name" type="text" readonly/>
-			<label>Address</label>
-			<input id="address" type="text" readonly/>
-			<label>Latitude</label>
-			<input id="latitude" type="text" readonly/>
-			<label>Longitude</label>
-			<input id="longitude" type="text" readonly/>
-			<label>Intro</label>
-			<textarea id="intro" rows="4" cols="100" style="resize: none" readonly></textarea>
-		</section>
+			<main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+				<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+					<h1 class="h2">BART Route</h1>
+				</div>
 
-		<section id="endInfo">
-			<label>Station Name</label>
-			<input id="name" type="text" readonly/>
-			<label>Address</label>
-			<input id="address" type="text" readonly/>
-			<label>Latitude</label>
-			<input id="latitude" type="text" readonly/>
-			<label>Longitude</label>
-			<input id="longitude" type="text" readonly/>
-			<label>Intro</label>
-			<textarea id="intro" rows="4" cols="100" style="resize: none" readonly></textarea>
-		</section>
-	</aside>
+				<div id="googleMap" style="width:100%;height:400px;"></div>
 
-	<footer>
+				<article>
+					{{{content}}}
+				</article>
+			</main>
+		</div>
+	</div>
+
+	<footer class="container">
+		<p>&copy; ahadiwijaya@scu.edu 2018</p>
 	</footer>
 
+	<!-- Scripts -->
 	<script
 	src="https://code.jquery.com/jquery-3.3.1.min.js"
 	integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
 	crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+	<!-- <script src="public/js/googlemap.js"></script> -->
+
 	<script>
+
 		var directionsService;
 		var directionsDisplay;
-		var mapStart;
-		var mapEnd;
+		var mapStart, mapEnd;
 
 		function initMap() {
 			directionsService = new google.maps.DirectionsService;
@@ -78,7 +110,7 @@
 
 			$.ajax({
 				url: "/trips",
-				data: {source: document.getElementById('start').value, dest: document.getElementById('end').value},
+				data: {source: $('#start').val(), dest: $('#end').val()},
 				success: function(res) {
 					console.log(res)
 				}
@@ -134,6 +166,7 @@
 					mapStart = buildStation(station, id)
 
 					calculateAndDisplayRoute(directionsService, directionsDisplay);
+					tripInfo();
 				}
 			})
 		});
@@ -149,9 +182,11 @@
 					mapEnd = buildStation(station, id)
 
 					calculateAndDisplayRoute(directionsService, directionsDisplay);
+					tripInfo();
 				}
 			})
 		});
+
 	</script>
 
 	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAeHd8YCGXmPjRLvokoUdFIyIT9XQHfZ7M&callback=initMap"></script>

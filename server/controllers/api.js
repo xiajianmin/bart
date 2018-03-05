@@ -4,7 +4,7 @@ const bartjson = 'json=y';
 
 const http = require('http');
 
-const httpCall = (url, reply) => {
+const httpCall = (url) => {
 	http.get(url, (res) => {
                 const { statusCode } = res;
                 const contentType = res.headers['content-type'];
@@ -30,20 +30,22 @@ const httpCall = (url, reply) => {
                 res.on('end', () => {
                         try {
                                 const parsedData = JSON.parse(rawData);
-                                return reply(parsedData);
+                                return parsedData;
                         } catch (e) {
-                                return reply(e.message);
+                                return e.message;
                         }
                 });
         }).on('error', (e) => {
-                return reply("Got error: ${e.message}");
+                return "Got error: ${e.message}";
         });
 }
 
 // Gets a list of BART stations using BART API as JSON
 const stations = (request, reply) => {
         let myurl = barturl + '/stn.aspx?cmd=stns&' + bartkey + '&' + bartjson;
-	return httpCall(myurl, reply); 
+	httpCall(myurl, function(res) {
+                return reply(res);
+        }); 
 }
 
 // Gives a details list of information for trains between supplied
