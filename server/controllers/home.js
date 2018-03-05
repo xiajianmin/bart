@@ -12,5 +12,5 @@ const index = (request, reply) => {
 }
 
 module.exports = {
-	index: index
+	index: index,
 }
