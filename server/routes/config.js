@@ -22,7 +22,7 @@ exports.register = (server, options, next) => {
 					directory: {
 						path: './public',
 						listing: false,
-						index: true
+						index: false
 					}
 				}
 			});
