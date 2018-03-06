@@ -2,15 +2,33 @@
 {{! The tag above means - insert everything in this file into the {content} of the default.html template }}
 
 <section>
+	<h5>Depart:</h5>
 	<select id="start">
 		{{#each data}}
 		<option value={{this.abbr}}>{{this.name}}</option>
 		{{/each}}
 	</select>
 
+	<h5>Destination:</h5>
 	<select id="end">
 		{{#each data}}
 		<option value={{this.abbr}}>{{this.name}}</option>
 		{{/each}}
 	</select>
 </section>
+
+<script>
+
+window.onload = function() {
+	if (typeof(Storage) !== "undefined") {
+		if (localStorage.visitcount) {
+			localStorage.visitcount = Number(localStorage.visitcount) + 1
+		} else {
+			localStorage.visitcount = 1;
+		}
+		let msg = "Welcome. You have visited this website " + localStorage.visitcount + " times using this browser."
+		alert(msg);
+	}
+}
+
+</script>

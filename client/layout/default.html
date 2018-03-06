@@ -22,39 +22,39 @@
 
 	<div class="container-fluid">
 		<div class="row">
-			<nav class="col-md-2 d-none d-md-block bg-light sidebar">
-				<div class="sidebar-sticky">
-					<aside>
+			<nav class="col-md-4 d-none d-md-block bg-light sidebar">
+				<aside class="sidebar-sticky">
+					<div>
 						<section id="startInfo">
-							<label>Station Name</label>
-							<input id="name" type="text" readonly/>
+							<h3><span id="startName"></span></h3>
 							<label>Address</label>
-							<input id="address" type="text" readonly/>
+							<input id="startAddress" type="text" readonly/>
 							<label>Latitude</label>
-							<input id="latitude" type="text" readonly/>
+							<input id="startLatitude" type="text" readonly/>
 							<label>Longitude</label>
-							<input id="longitude" type="text" readonly/>
+							<input id="startLongitude" type="text" readonly/>
 							<label>Intro</label>
-							<span id="intro" rows="4" cols="100" style="resize: none" readonly></span>
+							<textarea id="startIntro" rows="4" cols="30" style="resize: none" readonly></textarea>
 						</section>
+					</div>
 
+					<div>
 						<section id="endInfo">
-							<label>Station Name</label>
-							<input id="name" type="text" readonly/>
+							<h3><span id="endName"></span></h3>
 							<label>Address</label>
-							<input id="address" type="text" readonly/>
+							<input id="endAddress" type="text" readonly/>
 							<label>Latitude</label>
-							<input id="latitude" type="text" readonly/>
+							<input id="endLatitude" type="text" readonly/>
 							<label>Longitude</label>
-							<input id="longitude" type="text" readonly/>
+							<input id="endLongitude" type="text" readonly/>
 							<label>Intro</label>
-							<textarea id="intro" rows="4" cols="100" style="resize: none" readonly></textarea>
+							<textarea id="endIntro" rows="4" cols="30" style="resize: none" readonly></textarea>
 						</section>
-					</aside>
-				</div>
+					</div>
+				</aside>
 			</nav>
 
-			<main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+			<main class="col-md-8 ml-sm-auto col-lg-8 pt-3 px-4">
 				<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
 					<h1 class="h2">BART Route</h1>
 				</div>
@@ -62,14 +62,34 @@
 				<div id="googleMap" style="width:100%;height:400px;"></div>
 
 				<article>
-					{{{content}}}
+					<h2>This is the content</h2>
+					
+					<div>
+						{{{content}}}
+					</div>
+
+					<div class="table-responsive">
+						<table class="table table-sm">
+							<thead>
+							</thead>
+						</table>
+					</div>
+
+					<!-- The Same-Origin Policy:
+						In public API, there is a mechanism to use Cross-Origin Resource sharing (CORS).
+						Usually API developer need to consider the case, and the client browser will receive special HTTP headers in response that it allows CORS request.
+						This is what happens when using google map API to display map and route between BART station.
+						For my case in with BART API, I request the resoruces through server (backend) thus, client will not directly request to BART API server.
+					 -->
 				</article>
 			</main>
 		</div>
 	</div>
 
-	<footer class="container">
-		<p>&copy; ahadiwijaya@scu.edu 2018</p>
+	<footer class="footer">
+		<div class="container">
+			<span>&copy; ahadiwijaya@scu.edu 2018</span>
+		</div>
 	</footer>
 
 	<!-- Scripts -->
@@ -103,6 +123,10 @@
 			// document.getElementById('end').addEventListener('change', onChangeHandler);
 		}
 
+		function tripInfo(info, fares) {
+
+		}
+
 		function calculateAndDisplayRoute(directionsService, directionsDisplay) {
 			if (mapStart == null || mapEnd == null) {
 				return;
@@ -112,7 +136,9 @@
 				url: "/trips",
 				data: {source: $('#start').val(), dest: $('#end').val()},
 				success: function(res) {
-					console.log(res)
+					var info = res.root
+					var fares = info.fares.fare
+					tripInfo(info, fares);
 				}
 			})
 
@@ -133,29 +159,25 @@
 		}
 
 		function buildStation(station, id) {
-			var parent = 'startInfo'
-			if (id == 'end') {
-				parent = 'endInfo'
-			}
-
 			var addr = station.address + ', ' + station.city + ', ' + station.state + ' ' + station.zipcode 
+			var ltdlng = new google.maps.LatLng(station.gtfs_latitude, station.gtfs_longitude)
 
-			$('#'+parent + " #name").val()
-			$('#'+parent + " #address").val()
-			$('#'+parent + " #latitude").val()
-			$('#'+parent + " #longitude").val()
-			$('#'+parent + " #intro").val()
+			$("#"+id+"Name").text()
+			$("#"+id+"Address").val()
+			$("#"+id+"Latitude").val()
+			$("#"+id+"Longitude").val()
+			$("#"+id+"Intro").val()
 
-			$('#'+parent + " #name").val(station.name)
-			$('#'+parent + " #address").val(addr)
-			$('#'+parent + " #latitude").val(station.gtfs_latitude)
-			$('#'+parent + " #longitude").val(station.gtfs_longitude)
-			$('#'+parent + " #intro").val(station.intro["#cdata-section"])
+			$("#"+id+"Name").text(station.name)
+			$("#"+id+"Address").val(addr)
+			$("#"+id+"Latitude").val(station.gtfs_latitude)
+			$("#"+id+"Longitude").val(station.gtfs_longitude)
+			$("#"+id+"Intro").val(station.intro["#cdata-section"])
 
-			return addr;
+			return ltdlng;
 		}
 
-		$('#start').on("change", function() {
+		$('#start, #end').on("change", function() {
 			var abbr = $(this).val();
 			var id = $(this).attr("id")
 			$.ajax({
@@ -163,26 +185,14 @@
 				data: {source: abbr},
 				success: function(res) {
 					var station = res.root.stations.station
-					mapStart = buildStation(station, id)
+					if (id == "start") {
+						mapStart = buildStation(station, id)
+					}
+					else if (id == "end") {
+						mapEnd = buildStation(station, id)
+					}
 
 					calculateAndDisplayRoute(directionsService, directionsDisplay);
-					tripInfo();
-				}
-			})
-		});
-
-		$('#end').on("change", function() {
-			var abbr = $(this).val();
-			var id = $(this).attr("id")
-			$.ajax({
-				url: "/station",
-				data: {source: abbr},
-				success: function(res) {
-					var station = res.root.stations.station
-					mapEnd = buildStation(station, id)
-
-					calculateAndDisplayRoute(directionsService, directionsDisplay);
-					tripInfo();
 				}
 			})
 		});
