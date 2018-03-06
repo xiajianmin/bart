@@ -24,31 +24,47 @@
 		<div class="row" style="height:100%;">
 			<nav class="col-md-4 d-none d-md-block bg-light sidebar">
 				<aside class="sidebar-sticky">
-					<div>
-						<section id="startInfo">
-							<h3><span id="startName"></span></h3>
-							<label>Address</label>
-							<input id="startAddress" type="text" readonly/>
-							<label>Latitude</label>
-							<input id="startLatitude" type="text" readonly/>
-							<label>Longitude</label>
-							<input id="startLongitude" type="text" readonly/>
-							<label>Intro</label>
-							<textarea id="startIntro" rows="4" cols="30" style="resize: none" readonly></textarea>
+					<div class="border-bottom" style="margin: 10px;">
+						<section id="startInfo" style="display: none;">
+								<h3><span id="startName"></span></h3>
+								<div class="form-group">
+									<label>Address</label>
+									<input class="form-control" id="startAddress" type="text" readonly/>
+								</div>
+								<div class="form-group">
+									<label>Latitude</label>
+									<input class="form-control" id="startLatitude" type="text" readonly/>
+								</div>	
+								<div class="form-group">
+									<label>Longitude</label>
+									<input class="form-control" id="startLongitude" type="text" readonly/>
+								</div>
+								<div class="form-group">
+									<label>Intro</label>
+									<textarea class="form-control" id="startIntro" rows="4" style="resize: none" readonly></textarea>
+								</div>
 						</section>
 					</div>
 
-					<div>
-						<section id="endInfo">
+					<div style="margin: 10px;">
+						<section id="endInfo" style="display: none;">
 							<h3><span id="endName"></span></h3>
-							<label>Address</label>
-							<input id="endAddress" type="text" readonly/>
-							<label>Latitude</label>
-							<input id="endLatitude" type="text" readonly/>
-							<label>Longitude</label>
-							<input id="endLongitude" type="text" readonly/>
-							<label>Intro</label>
-							<textarea id="endIntro" rows="4" cols="30" style="resize: none" readonly></textarea>
+							<div class="form-group">
+								<label>Address</label>
+								<input class="form-control" id="endAddress" type="text" readonly/>
+							</div>
+							<div class="form-group">
+								<label>Latitude</label>
+								<input class="form-control" id="endLatitude" type="text" readonly/>
+							</div>
+							<div class="form-group">
+								<label>Longitude</label>
+								<input class="form-control" id="endLongitude" type="text" readonly/>
+							</div>
+							<div class="form-group">
+								<label>Intro</label>
+								<textarea class="form-control" id="endIntro" rows="4" style="resize: none" readonly></textarea>
+							</div>
 						</section>
 					</div>
 				</aside>
@@ -61,14 +77,16 @@
 
 				<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
 					<div id="googleMap" style="width:100%;height:400px;"></div>
-
 				</div>
 				<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-					<article>
+					<article style="width:100%;">
 						<h2>This is the content</h2>
-					
+						
 						<div>
 							{{{content}}}
+						</div>
+
+						<div id="tripDetail">
 						</div>
 
 						<div class="table-responsive">
@@ -127,8 +145,25 @@
 			// document.getElementById('end').addEventListener('change', onChangeHandler);
 		}
 
-		function tripInfo(info, fares) {
+		function fareDetail(fare) {
+			for (var i=0; i < fare.length; i++) {
+				var j = fare[i];
 
+				console.log(j["@name"] + ": " + j["@amount"]);
+			}
+		}
+
+		function tripDetail(trip) {
+			for (var i=0; i < trip.length; i++) {
+				var j = "";
+				
+				j += "dep: " + trip[i]["@origTimeMin"];
+				j += " arr: " + trip[i]["@destTimeMin"];
+
+				console.log(j);
+				fareDetail(trip[i].fares.fare);
+				console.log("hey " + i);
+			}
 		}
 
 		function calculateAndDisplayRoute(directionsService, directionsDisplay) {
@@ -140,9 +175,8 @@
 				url: "/trips",
 				data: {source: $('#start').val(), dest: $('#end').val()},
 				success: function(res) {
-					var info = res.root
-					var fares = info.fares.fare
-					tripInfo(info, fares);
+					var trip = res.root.schedule.request.trip
+					tripDetail(trip);
 				}
 			})
 
@@ -178,6 +212,7 @@
 			$("#"+id+"Longitude").val(station.gtfs_longitude)
 			$("#"+id+"Intro").val(station.intro["#cdata-section"])
 
+			$("#"+id+"Info").show();
 			return ltdlng;
 		}
 

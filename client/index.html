@@ -2,6 +2,8 @@
 {{! The tag above means - insert everything in this file into the {content} of the default.html template }}
 
 <section>
+	<div class="row">
+	<div class="col">
 	<h5>Depart:</h5>
 	<select id="start">
 		<option disabled selected>-- Select an option --</option>
@@ -9,7 +11,8 @@
 		<option value={{this.abbr}}>{{this.name}}</option>
 		{{/each}}
 	</select>
-
+	</div>
+	<div class="col">
 	<h5>Destination:</h5>
 	<select id="end">
 		<option disabled selected>-- Select an option --</option>
@@ -17,6 +20,8 @@
 		<option value={{this.abbr}}>{{this.name}}</option>
 		{{/each}}
 	</select>
+	<div>
+	</div>
 </section>
 
 <script>

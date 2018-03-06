@@ -54,6 +54,8 @@ const trips = (request, reply) => {
 	var source = params.source
 	var dest = params.dest
 	var date = params.date || 'today';
+	var a = params.a || '4';
+	var b = params.b || '0';
 
 	// error handler if either is null
 	if (source == undefined || dest == undefined) {
@@ -62,7 +64,7 @@ const trips = (request, reply) => {
 
 	// if the content is not on the list?
 
-	let myurl = barturl + '/sched.aspx?cmd=fare&' + bartkey + '&' + bartjson + '&orig=' + source + '&dest=' + dest + '&date=' + date;
+	let myurl = barturl + '/sched.aspx?cmd=depart&' + bartkey + '&' + bartjson + '&orig=' + source + '&dest=' + dest + '&date=' + date + '&a=' + a + '&b=' + b;
 	return httpCall(myurl, reply);
 }
 
