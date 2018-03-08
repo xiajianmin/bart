@@ -1,5 +1,11 @@
 <!DOCTYPE html>
 <html style="height:100%;">
+<!-- The Same-Origin Policy:
+	In public API, there is a mechanism to use Cross-Origin Resource sharing (CORS).
+	Usually API developer need to consider the case, and the client browser will receive special HTTP headers in response that it allows CORS request.
+	This is what happens when using google map API to display map and route between BART station.
+	For my case in with BART API, I request the resoruces through server (backend) thus, client will not directly request to BART API server.
+-->
 <head>
 	<title>BART</title>
 	<meta charset="utf-8" />
@@ -12,6 +18,7 @@
 		<nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0">
 			<a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">BART Project</a>
 			<!-- <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search"> -->
+			<span id="countDownWidget"></span>
 			<ul class="navbar-nav px-3">
 				<li class="nav-item text-nowrap">
 					<a class="nav-link" href="#"></a>
@@ -80,28 +87,12 @@
 				</div>
 				<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
 					<article style="width:100%;">
-						<h2>This is the content</h2>
-						
 						<div>
 							{{{content}}}
+							<div id="tripDetail">
+							</div>
 						</div>
 
-						<div id="tripDetail">
-						</div>
-
-						<div class="table-responsive">
-							<table class="table table-sm">
-								<thead>
-								</thead>
-							</table>
-						</div>
-
-					<!-- The Same-Origin Policy:
-						In public API, there is a mechanism to use Cross-Origin Resource sharing (CORS).
-						Usually API developer need to consider the case, and the client browser will receive special HTTP headers in response that it allows CORS request.
-						This is what happens when using google map API to display map and route between BART station.
-						For my case in with BART API, I request the resoruces through server (backend) thus, client will not directly request to BART API server.
-					 -->
 					</article>
 				</div>
 
@@ -129,6 +120,7 @@
 		var directionsDisplay;
 		var mapStart, mapEnd;
 
+		// initialize google map
 		function initMap() {
 			directionsService = new google.maps.DirectionsService;
 			directionsDisplay = new google.maps.DirectionsRenderer;
@@ -145,41 +137,128 @@
 			// document.getElementById('end').addEventListener('change', onChangeHandler);
 		}
 
+		// build html string for fares
 		function fareDetail(fare) {
+			var strFare = "<div class='row' style='color: blue;'>"
 			for (var i=0; i < fare.length; i++) {
-				var j = fare[i];
-
-				console.log(j["@name"] + ": " + j["@amount"]);
+				strFare += "<div class='col'>" +
+					fare[i]["@name"] + "</div>";
 			}
+
+			strFare += "</div><div class='row' style='color: blue;'>";
+			for (var i=0; i < fare.length; i++) {
+				strFare += "<div class='col'>" +
+					"$ " + fare[i]["@amount"] + "</div>";
+			}
+
+			strFare += "</div>";
+			return strFare;
 		}
 
+		// convert time String to datetime object
+		function convertTime(time) {
+			var hours = Number(time.match(/^(\d+)/)[1]);
+			var min = Number(time.match(/:(\d+)/)[1]);
+			var AMPM = time.match(/\s(.*)$/)[1];
+			if(AMPM == "PM" && hours<12) hours = hours+12;
+			if(AMPM == "AM" && hours==12) hours = hours-12;
+			var tm = new Date();
+			tm.setHours(hours, min);
+
+			return tm;
+		}
+
+		// calculate time difference, return time string
+		function getTimeDiff(curTime, depTime) {
+			var timeDiff = convertTime(depTime) - curTime;
+
+			var diffHrs = Math.floor((timeDiff % 86400000) / 3600000); // hours
+			var diffMins = Math.round(((timeDiff % 86400000) % 3600000) / 60000); // minutes
+			var strTime = "Train is coming in ";
+			if (diffHrs > 0) {
+				strTime += diffHrs + " hrs, ";
+			}
+			if (diffMins > 0) {
+				strTime += diffMins + " min";
+			} else if (diffHrs == 0 && diffMins == 0) {
+				strTime = "";
+				strTime += "Train is coming and departing soon.";
+			} else {
+				strTime = "";
+				strTime += "Please check the next train.";
+			}
+			
+			return strTime;	
+		}
+
+		// countdown widget, only for the first train;
+		function startCountDown() {
+
+		}
+
+		// leg
+		function getLeg(leg) {
+			var strLeg = "<h5>" + leg[0]["@origTimeMin"] +
+                                " >> " +
+                                leg[0]["@destTimeMin"];
+			for (var i=1; i < leg.length; i++) {
+				strLeg += " -> " +  leg[i]["@origTimeMin"]  + ">>"  + leg[i]["@destTimeMin"]
+			}
+
+			strLeg += "</h5>"
+			return strLeg;
+		}
+
+		// display trip information
 		function tripDetail(trip) {
-			for (var i=0; i < trip.length; i++) {
-				var j = "";
-				
-				j += "dep: " + trip[i]["@origTimeMin"];
-				j += " arr: " + trip[i]["@destTimeMin"];
+			$("#tripDetail").empty()
+			var curTime = new Date();
 
-				console.log(j);
-				fareDetail(trip[i].fares.fare);
-				console.log("hey " + i);
+			for (var i=0; i < trip.length; i++) {
+				var j = "<div class='row'><div class='col'>"
+				j+= getLeg(trip[i].leg);
+
+				j += "</div><div class='col'><h5>" +
+					getTimeDiff(curTime, trip[i]["@origTimeMin"]) +
+					"</h5></div></div>";
+
+				if (i==0) {
+					startCountDown();
+				}
+
+				j += fareDetail(trip[i].fares.fare);
+
+				$("#tripDetail").append(j);
 			}
 		}
 
+		// helper function to call trips, will be called every 30sec
+		function tripCall() {
+			$.ajax({
+                                url: "/trips",
+                                data: {source: $('#start').val(), dest: $('#end').val()},
+                                success: function(res) {
+                                        var trip = res.root.schedule.request.trip
+                                        tripDetail(trip);
+                                }
+                        })
+
+		}
+
+		// call trip information, and setup update interval
+		function autoUpdate() {
+			tripCall();
+			window.setInterval(tripCall, 30000);
+		}
+
+		// display trip on google map
 		function calculateAndDisplayRoute(directionsService, directionsDisplay) {
 			if (mapStart == null || mapEnd == null) {
 				return;
 			}
 
-			$.ajax({
-				url: "/trips",
-				data: {source: $('#start').val(), dest: $('#end').val()},
-				success: function(res) {
-					var trip = res.root.schedule.request.trip
-					tripDetail(trip);
-				}
-			})
-
+			autoUpdate();		
+	
 			directionsService.route({
 				origin: mapStart,
 				destination: mapEnd,
@@ -196,6 +275,7 @@
 			});
 		}
 
+		// display station(s) information on sidebar
 		function buildStation(station, id) {
 			var addr = station.address + ', ' + station.city + ', ' + station.state + ' ' + station.zipcode 
 			var ltdlng = new google.maps.LatLng(station.gtfs_latitude, station.gtfs_longitude)
