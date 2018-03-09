@@ -125,6 +125,7 @@
 		var directionsDisplay;
 		var mapStart, mapEnd;
 		var clock;
+		var updClock = 0;
 
 		// initialize google map
 		function initMap() {
@@ -169,7 +170,7 @@
 			if(AMPM == "PM" && hours<12) hours = hours+12;
 			if(AMPM == "AM" && hours==12) hours = hours-12;
 			var tm = new Date();
-			tm.setHours(hours, min);
+			tm.setHours(hours, min, 0);
 
 			return tm;
 		}
@@ -198,12 +199,16 @@
 		}
 
 		// countdown widget, only for the first train;
+		// update clock every 1 minute
 		function startCountDown(curTime, depTime) {
 			var depTimeObj = (convertTime(depTime) - curTime) / 1000;
-			clock = $('.clock').FlipClock(depTimeObj, {
-				clockFace: 'MinuteCounter',
-				countdown: true,
-			});
+			updClock += 1;
+			if ((updClock % 2) == 1) {
+				clock = $('.clock').FlipClock(depTimeObj, {
+					clockFace: 'MinuteCounter',
+					countdown: true,
+				});
+			}
 		}
 
 		// leg
@@ -233,6 +238,7 @@
 					"</h5></div></div>";
 
 				if (i==0) {
+					updClock = 0;
 					startCountDown(curTime, trip[i]["@origTimeMin"]);
 				}
 
@@ -250,6 +256,7 @@
                                 success: function(res) {
                                         var trip = res.root.schedule.request.trip
                                         tripDetail(trip);
+					
                                 }
                         })
 
